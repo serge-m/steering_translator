@@ -9,9 +9,6 @@ from steering_translator.cfg import SteeringTranslatorConfig
 from ackermann_msgs.msg import AckermannDriveStamped
 from pwm_radio_arduino.msg import pwm_steering
 
-DIR = os.path.dirname(os.path.realpath(__file__))
-CONFIG_FILE = os.path.join(DIR, "..", "steering_translator.json")
-
 _DEFAULT_CONFIG = {
     "steering_pwm_left": 0,
     "steering_pwm_center": 0,
