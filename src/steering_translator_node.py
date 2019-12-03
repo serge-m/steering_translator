@@ -51,7 +51,6 @@ def handle_config_update(received_config, level):
 
 
 def handle_input(data):
-    rospy.loginfo("new message {}".format(data))
     msg = pwm_steering()
     msg.steering = np.interp(data.drive.steering_angle, INPUT_RANGE_STEERING, pwm_range_steering).astype('int32')
     msg.throttle = np.interp(data.drive.speed, INPUT_RANGE_THROTTLE, pwm_range_throttle).astype('int32')
