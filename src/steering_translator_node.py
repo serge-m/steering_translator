@@ -7,7 +7,7 @@ import rospy
 from dynamic_reconfigure.server import Server
 from steering_translator.cfg import SteeringTranslatorConfig
 from ackermann_msgs.msg import AckermannDriveStamped
-from pwm_radio_arduino.msg import pwm_steering
+from pwm_radio_arduino.msg import control
 
 _DEFAULT_CONFIG = {
     "steering_pwm_left": 0,
@@ -51,15 +51,23 @@ def handle_config_update(received_config, level):
 
 
 def handle_input(data):
-    msg = pwm_steering()
-    msg.steering = np.interp(data.drive.steering_angle, INPUT_RANGE_STEERING, pwm_range_steering).astype('int32')
-    msg.throttle = np.interp(data.drive.speed, INPUT_RANGE_THROTTLE, pwm_range_throttle).astype('int32')
+    msg = control()
+    msg.angle_control_usec = np.interp(
+        data.drive.steering_angle, INPUT_RANGE_STEERING, pwm_range_steering
+    ).astype('int32')
+    msg.speed_control_usec = np.interp(
+        data.drive.speed, INPUT_RANGE_THROTTLE, pwm_range_throttle
+    ).astype('int32')
     steering_publisher.publish(msg)
 
 
 if __name__ == "__main__":
     rospy.init_node("steering_translator", anonymous=False)
-    steering_publisher = rospy.Publisher("pwm_radio_arduino/driver_pwm", pwm_steering, queue_size=10)
-    rospy.Subscriber("ackermann_cmd_mux/input/ai_driver", AckermannDriveStamped, handle_input)
+    steering_publisher = rospy.Publisher(
+        "pwm_radio_arduino/control_driver", control, queue_size=1
+    )
+    rospy.Subscriber(
+        "ackermann_cmd", AckermannDriveStamped, handle_input
+    )
     srv = Server(SteeringTranslatorConfig, handle_config_update)
     rospy.spin()
